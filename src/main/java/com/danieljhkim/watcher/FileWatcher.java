@@ -1,50 +1,55 @@
 package com.danieljhkim.watcher;
 
 import com.danieljhkim.indexer.Indexer;
-import org.apache.lucene.store.ByteBuffersDirectory;
+import com.danieljhkim.searcher.Searcher;
 
 import java.io.IOException;
 import java.nio.file.*;
-
-import static java.nio.file.StandardWatchEventKinds.*;
+import java.util.logging.Logger;
 
 public class FileWatcher implements Runnable {
 
+    private static final Logger logger = Logger.getLogger(FileWatcher.class.getName());
     private final Path dir;
     private final Indexer indexer;
+    private final Searcher searcher;
+    private final int maxResults = 10;
+    private final String searchWord;
 
-    public FileWatcher(ByteBuffersDirectory index, String dirPath) {
+    public FileWatcher(Indexer indexer, Searcher searcher, String dirPath, String searchWord) throws IOException {
         this.dir = Paths.get(dirPath);
-        this.indexer = new Indexer(index);
+        this.indexer = indexer;
+        this.searcher = searcher;
+        this.searchWord = searchWord;
     }
 
     @Override
     public void run() {
         try (WatchService watcher = FileSystems.getDefault().newWatchService()) {
-            dir.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-            System.out.println("Watching directory: " + dir.toAbsolutePath());
+            dir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
+            logger.info("Watching directory: " + dir.toAbsolutePath());
 
             WatchKey key;
             while ((key = watcher.take()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     WatchEvent.Kind<?> kind = event.kind();
                     Path changed = dir.resolve((Path) event.context());
+                    logger.info("Event detected: " + kind.name() + " - " + changed);
 
-                    System.out.println("Event detected: " + kind.name() + " - " + changed);
-
-                    // Re-index whenever a .txt file is added or modified
-                    if (kind == ENTRY_CREATE || kind == ENTRY_MODIFY) {
-                        if (changed.toString().endsWith(".txt")) {
-                            indexer.indexDirectory(dir.toString());
+                    if ((kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY)
+                            && changed.toString().endsWith(".txt")) {
+                        indexer.indexFile(changed);
+                        try {
+                            searcher.search(searchWord, maxResults);
+                        } catch (Exception e) {
+                            logger.severe("Error during search: " + e.getMessage());
                         }
                     }
-
                 }
                 key.reset();
             }
         } catch (InterruptedException | IOException e) {
-            System.err.println("Error in FileWatcher: " + e.getMessage());
+            logger.severe("Error in FileWatcher: " + e.getMessage());
         }
     }
-
 }
