@@ -1,4 +1,4 @@
-package com.danieljhkim.config;
+package com.lucene.config;
 // DozerMapper
 public class MapperConfig {
 }
