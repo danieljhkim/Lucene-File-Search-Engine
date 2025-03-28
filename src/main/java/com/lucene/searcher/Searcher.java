@@ -1,5 +1,6 @@
-package com.danieljhkim.searcher;
+package com.lucene.searcher;
 
+import com.lucene.util.logging.CustomLogger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -15,7 +16,8 @@ import java.util.logging.Logger;
 
 public class Searcher {
 
-    private static final Logger logger = Logger.getLogger(Searcher.class.getName());
+    private static final Logger logger = CustomLogger.getLogger(Searcher.class.getName());
+
     private final ByteBuffersDirectory index;
     private final StandardAnalyzer analyzer;
     private DirectoryReader reader;

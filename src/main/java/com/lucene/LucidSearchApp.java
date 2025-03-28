@@ -1,7 +1,7 @@
-package com.danieljhkim;
+package com.lucene;
 
 
-import com.danieljhkim.ui.LuceneApp;
+import com.lucene.ui.LuceneApp;
 import javafx.application.Application;
 
 public class LucidSearchApp {

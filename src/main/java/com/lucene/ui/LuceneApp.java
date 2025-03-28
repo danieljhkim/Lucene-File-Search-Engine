@@ -1,7 +1,7 @@
-package com.danieljhkim.ui;
+package com.lucene.ui;
 
-import com.danieljhkim.indexer.Indexer;
-import com.danieljhkim.searcher.Searcher;
+import com.lucene.indexer.Indexer;
+import com.lucene.searcher.Searcher;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;

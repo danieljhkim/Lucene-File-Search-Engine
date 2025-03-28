@@ -1,5 +1,6 @@
-package com.danieljhkim.indexer;
+package com.lucene.indexer;
 
+import com.lucene.util.logging.CustomLogger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -19,7 +20,8 @@ import java.util.logging.Logger;
 
 public class Indexer {
 
-    private static final Logger logger = Logger.getLogger(Indexer.class.getName());
+    private static final Logger logger = CustomLogger.getLogger(Indexer.class.getName());
+
     private final ByteBuffersDirectory index;
     private final Analyzer analyzer;
     private final IndexWriter writer;

@@ -1,7 +1,8 @@
-package com.danieljhkim.watcher;
+package com.lucene.watcher;
 
-import com.danieljhkim.indexer.Indexer;
-import com.danieljhkim.searcher.Searcher;
+import com.lucene.indexer.Indexer;
+import com.lucene.searcher.Searcher;
+import com.lucene.util.logging.CustomLogger;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -9,7 +10,8 @@ import java.util.logging.Logger;
 
 public class FileWatcher implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(FileWatcher.class.getName());
+    private static final Logger logger = CustomLogger.getLogger(FileWatcher.class.getName());
+
     private final Path dir;
     private final Indexer indexer;
     private final Searcher searcher;
