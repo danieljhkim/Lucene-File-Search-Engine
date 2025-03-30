@@ -10,7 +10,7 @@ A lightweight search engine built with Java and Apache Lucene that indexes perso
 ## Features
 - File indexing and search capabilities
 - JavaFX-based user interface
-- Simple Maven integration for builds
+- Log viewer for monitoring search activities
 
 ## Requirements
 - Java JDK 17 or higher
