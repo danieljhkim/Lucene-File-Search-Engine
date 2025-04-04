@@ -5,13 +5,12 @@ import javafx.scene.control.Alert;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class BaseView extends VBox {
+abstract class BaseView extends VBox {
 
     private static final String VIEW_NAME = "BaseView";
     public Stage primaryStage;
     public LogView logView;
     public LogAppender logAppender = new LogAppender(VIEW_NAME);
-    ;
 
     public BaseView() {
         super();
