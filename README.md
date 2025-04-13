@@ -5,12 +5,17 @@
 Personal file search engine powered by Lucene.
 
 ## Overview
-A lightweight search engine built with Java and Apache Lucene that indexes personal files for fast retrieval.
+A lightweight search engine built with Java and Apache Lucene that indexes personal files for fast retrieval by relevancy.
 
 ## Features
 - File indexing and search capabilities
 - JavaFX-based user interface
 - Log viewer for monitoring search activities
+- File type filtering (e.g., `.txt`, `.pdf`, etc.)
+- Relevancy-based search results
+
+## GUI Preview
+![Lucid Search Engine GUI](assets/gui.png)
 
 ## Requirements
 - Java JDK 17 or higher
