@@ -2,9 +2,12 @@ package com.lucene.ui.views;
 
 import com.lucene.indexer.Indexer;
 import com.lucene.searcher.Searcher;
+import com.lucene.util.Constants;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -23,6 +26,8 @@ public class SearchView extends BaseView {
     private final ListView<String> resultsView = new ListView<>();
     private final Button searchBtn = new Button("Search");
     private final Button indexBtn = new Button("Choose Directory & Index");
+    private final Button clearBtn = new Button("Clear");
+    private final ComboBox<String> fileTypeComboBox = new ComboBox<>();
     private final Stage primaryStage;
     private Indexer indexer;
     private Searcher searcher;
@@ -33,18 +38,31 @@ public class SearchView extends BaseView {
     }
 
     public void init() {
+
         TextField queryField = new TextField();
         directoryChooser.setTitle("Select Directory to Index");
 
         initializeIndexer();
         initializeSearcher();
 
+        fileTypeComboBox.setItems(FXCollections.observableArrayList(Constants.SUPPORTED_FILE_TYPES));
+        fileTypeComboBox.getSelectionModel().selectFirst();
         searchBtn.setOnAction(event -> search(queryField, resultsView));
         indexBtn.setOnAction(event -> selectDirectoryAndIndex());
+        clearBtn.setOnAction(event -> clearResults());
+        HBox buttonBox = new HBox(10, fileTypeComboBox, indexBtn);
 
-        VBox searchVBox = new VBox(10, new Label("Enter search query:"), queryField, searchBtn, indexBtn, resultsView);
+        VBox searchVBox = new VBox(10,
+                new Label("Enter search query:"),
+                queryField,
+                searchBtn,
+                new Label("Select file type:"),
+                buttonBox,
+                resultsView,
+                clearBtn
+        );
         searchVBox.setPadding(new Insets(20));
-        
+
         this.getChildren().add(searchVBox);
     }
 
@@ -86,14 +104,18 @@ public class SearchView extends BaseView {
      * Performs a search with the given query and updates the results view.
      */
     private void search(TextField queryField, ListView<String> resultsView) {
+        if (queryField == null || resultsView == null) {
+            return;
+        }
+        clearResults();
         String query = queryField.getText().trim();
         if (!query.isEmpty() && searcher != null) {
             resultsView.getItems().clear();
             try {
-                ScoreDoc[] hits = searcher.getSearch(query, 10);
+                ScoreDoc[] hits = searcher.getSearch(query, 100);
                 for (ScoreDoc hit : hits) {
                     Document doc = searcher.getDocument(hit);
-                    resultsView.getItems().add(doc.get("filename") + ": " + preview(doc.get("content")));
+                    resultsView.getItems().add("* Score: " + hit.score + " | " + doc.get("filename") + " | " + doc.get("path"));
                 }
             } catch (Exception e) {
                 String errorMessage = "Search failed: " + e.getMessage();
@@ -109,8 +131,9 @@ public class SearchView extends BaseView {
     private void selectDirectoryAndIndex() {
         File selectedDirectory = directoryChooser.showDialog(primaryStage);
         if (selectedDirectory != null) {
+            String fileType = fileTypeComboBox.getSelectionModel().getSelectedItem();
             try {
-                indexer.indexDirectory(selectedDirectory.getAbsolutePath());
+                indexer.indexDirectory(selectedDirectory.getAbsolutePath(), fileType);
                 Platform.runLater(() -> showAlert(Alert.AlertType.INFORMATION, "Indexing complete!"));
                 logView.appendLog(logAppender.info("Indexing complete for directory: " + selectedDirectory.getAbsolutePath()));
                 initializeSearcher();
@@ -120,6 +143,10 @@ public class SearchView extends BaseView {
                 Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, errorMessage));
             }
         }
+    }
+
+    public void clearResults() {
+        resultsView.getItems().clear();
     }
 
     /**

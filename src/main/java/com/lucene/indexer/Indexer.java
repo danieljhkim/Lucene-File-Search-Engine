@@ -1,5 +1,7 @@
 package com.lucene.indexer;
 
+import com.lucene.util.CollectionsUtil;
+import com.lucene.util.Constants;
 import com.lucene.util.logging.CustomLogger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -16,12 +18,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class Indexer {
 
+    public static final Set<String> FILE_TYPES = CollectionsUtil.arrayToSet(Constants.SUPPORTED_FILE_TYPES);
     private static final Logger logger = CustomLogger.getLogger(Indexer.class.getName());
-
     private final ByteBuffersDirectory index;
     private final Analyzer analyzer;
     private final IndexWriter writer;
@@ -40,15 +43,31 @@ public class Indexer {
         this.writer = new IndexWriter(index, config);
     }
 
-    public void indexDirectory(String directoryPath) throws IOException {
+    public void indexDirectory(String directoryPath, String fileType) throws IOException {
         Path docDir = Paths.get(directoryPath);
         if (!Files.isDirectory(docDir)) {
             throw new IOException(directoryPath + " is not a valid directory");
         }
-
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(docDir, "*.txt")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(docDir)) {
             for (Path file : stream) {
-                indexFile(file);
+                if (!Files.isDirectory(file)) {
+                    String fileName = file.getFileName().toString().toLowerCase();
+                    int idx = fileName.lastIndexOf(".");
+                    String fileExt = (idx > 0) ? fileName.substring(idx + 1) : "";
+                    if (FILE_TYPES.contains(fileExt)) {
+                        if (fileType.equals("all")) {
+                            indexFile(file);
+                        } else {
+                            if (file.toString().endsWith(fileType)) {
+                                logger.info("Indexing file: " + file.getFileName());
+                                indexFile(file);
+                            }
+                        }
+                    }
+                } else {
+                    logger.info("**Exploring subdirectory (DFS time)**: " + file);
+                    indexDirectory(file.toString(), fileType);
+                }
             }
         }
     }
@@ -59,7 +78,7 @@ public class Indexer {
         Document doc = new Document();
         doc.add(new TextField("filename", filePath.getFileName().toString(), Field.Store.YES));
         doc.add(new TextField("content", content, Field.Store.YES));
-
+        doc.add(new TextField("path", filePath.toAbsolutePath().toString(), Field.Store.YES));
         // Use updateDocument to replace older versions with same filename
         writer.updateDocument(new Term("filename", filePath.getFileName().toString()), doc);
         writer.commit();

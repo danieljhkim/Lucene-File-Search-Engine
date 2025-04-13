@@ -26,7 +26,7 @@ public class AppRun {
 
             Analyzer analyzer = new StandardAnalyzer();
             Indexer indexer = new Indexer(index, analyzer);
-            indexer.indexDirectory(filepath);
+            indexer.indexDirectory(filepath, "all");
 
             Searcher searcher = new Searcher(index);
             FileWatcher watcher = new FileWatcher(indexer, searcher, filepath, "Lucene");

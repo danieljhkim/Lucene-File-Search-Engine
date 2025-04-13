@@ -28,7 +28,7 @@ abstract class BaseView extends VBox {
      * Provides a preview of the given content.
      */
     public String preview(String content) {
-        final int previewLength = 150;
+        final int previewLength = 100;
         return content.length() > previewLength ? content.substring(0, previewLength) + "..." : content;
     }
 
