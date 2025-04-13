@@ -3,6 +3,7 @@ package com.lucene.ui.views;
 import com.lucene.indexer.Indexer;
 import com.lucene.searcher.Searcher;
 import com.lucene.util.Constants;
+import com.lucene.util.MathUtil;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -73,6 +74,7 @@ public class SearchView extends BaseView {
      */
     private boolean initializeSearcher() {
         try {
+            logView.appendLog(logAppender.debug("Initializing Searcher..."));
             searcher = new Searcher(index);
             searchBtn.setDisable(false);
             return true;
@@ -90,6 +92,7 @@ public class SearchView extends BaseView {
 
     private boolean initializeIndexer() {
         try {
+            logView.appendLog(logAppender.debug("Initializing Indexer..."));
             indexer = new Indexer(index);
             return true;
         } catch (Exception e) {
@@ -112,11 +115,12 @@ public class SearchView extends BaseView {
         if (!query.isEmpty() && searcher != null) {
             resultsView.getItems().clear();
             try {
-                ScoreDoc[] hits = searcher.getSearch(query, 100);
+                ScoreDoc[] hits = searcher.getSearch(query, 10000);
                 for (ScoreDoc hit : hits) {
                     Document doc = searcher.getDocument(hit);
-                    resultsView.getItems().add("* Score: " + hit.score + " | " + doc.get("filename") + " | " + doc.get("path"));
+                    resultsView.getItems().add("* Score: " + MathUtil.foundUpToThousandth(hit.score) + "     [" + doc.get("filename") + "]     " + doc.get("path"));
                 }
+                logView.appendLog(logAppender.info("Search complete. Number of hits: " + hits.length));
             } catch (Exception e) {
                 String errorMessage = "Search failed: " + e.getMessage();
                 showAlert(Alert.AlertType.ERROR, errorMessage);
@@ -130,19 +134,22 @@ public class SearchView extends BaseView {
      */
     private void selectDirectoryAndIndex() {
         File selectedDirectory = directoryChooser.showDialog(primaryStage);
-        if (selectedDirectory != null) {
-            String fileType = fileTypeComboBox.getSelectionModel().getSelectedItem();
-            try {
-                indexer.indexDirectory(selectedDirectory.getAbsolutePath(), fileType);
-                Platform.runLater(() -> showAlert(Alert.AlertType.INFORMATION, "Indexing complete!"));
-                logView.appendLog(logAppender.info("Indexing complete for directory: " + selectedDirectory.getAbsolutePath()));
-                initializeSearcher();
-            } catch (Exception e) {
-                String errorMessage = "Failed to index directory: " + e.getMessage();
-                logView.appendLog(logAppender.error(errorMessage));
-                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, errorMessage));
-            }
+        if (selectedDirectory == null) {
+            logView.appendLog(logAppender.warning("No directory selected."));
+            return;
         }
+        String fileType = fileTypeComboBox.getSelectionModel().getSelectedItem();
+        try {
+            indexer.indexDirectory(selectedDirectory.getAbsolutePath(), fileType);
+            Platform.runLater(() -> showAlert(Alert.AlertType.INFORMATION, "Indexing complete!"));
+            logView.appendLog(logAppender.info("Indexing complete for directory: " + selectedDirectory.getAbsolutePath()));
+            initializeSearcher();
+        } catch (Exception e) {
+            String errorMessage = "Failed to index directory: " + e.getMessage();
+            logView.appendLog(logAppender.error(errorMessage));
+            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, errorMessage));
+        }
+
     }
 
     public void clearResults() {

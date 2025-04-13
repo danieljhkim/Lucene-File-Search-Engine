@@ -8,7 +8,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 
-public class LuceneApp extends Application {
+public class LucidApp extends Application {
 
     private static final String APP_NAME = "LucidSearch";
     private final LogView logView = new LogView();

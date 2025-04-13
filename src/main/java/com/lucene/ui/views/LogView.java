@@ -30,7 +30,7 @@ public class LogView extends BaseView {
         BorderPane pane = new BorderPane();
         pane.setCenter(logTextArea);
         pane.setBottom(refreshBtn);
-        pane.setPadding(new Insets(10));
+        pane.setPadding(new Insets(20));
 
         return pane;
     }

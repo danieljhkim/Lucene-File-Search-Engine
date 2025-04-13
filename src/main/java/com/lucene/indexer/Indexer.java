@@ -53,8 +53,9 @@ public class Indexer {
                 if (!Files.isDirectory(file)) {
                     String fileName = file.getFileName().toString().toLowerCase();
                     int idx = fileName.lastIndexOf(".");
-                    String fileExt = (idx > 0) ? fileName.substring(idx + 1) : "";
+                    String fileExt = (idx > 0) ? fileName.substring(idx + 1) : "INVALID";
                     if (FILE_TYPES.contains(fileExt)) {
+                        logger.info("File extension: " + file);
                         if (fileType.equals("all")) {
                             indexFile(file);
                         } else {

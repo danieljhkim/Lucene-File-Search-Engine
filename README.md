@@ -11,7 +11,7 @@ A lightweight search engine built with Java and Apache Lucene that indexes perso
 - File indexing and search capabilities
 - JavaFX-based user interface
 - Log viewer for monitoring search activities
-- File type filtering (e.g., `.txt`, `.pdf`, etc.)
+- File type filtering (e.g., `.txt`, `.doc`, etc.)
 - Relevancy-based search results
 
 ## GUI Preview
