@@ -1,5 +1,6 @@
 package com.lucene.searcher;
 
+import com.lucene.model.WatchResult;
 import com.lucene.util.logging.CustomLogger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -12,6 +13,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.ByteBuffersDirectory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Searcher {
@@ -30,6 +33,14 @@ public class Searcher {
         this.searcher = new IndexSearcher(this.reader);
     }
 
+    public Searcher(ByteBuffersDirectory index, StandardAnalyzer analyzer) throws IOException {
+        this.index = index;
+        this.analyzer = analyzer;
+        this.reader = DirectoryReader.open(this.index);
+        this.searcher = new IndexSearcher(this.reader);
+    }
+
+
     public void refresh() throws IOException {
         DirectoryReader newReader = DirectoryReader.openIfChanged(this.reader);
         if (newReader != null) {
@@ -40,18 +51,28 @@ public class Searcher {
         }
     }
 
-    public void search(String queryString, int maxResults) throws Exception {
+    public List<WatchResult> search(String queryString, int maxResults) throws Exception {
         // Refresh the reader before searching
         refresh();
+        List<WatchResult> wresults = new ArrayList<>();
         Query query = new QueryParser("content", analyzer).parse(queryString);
         TopDocs topDocs = searcher.search(query, maxResults);
         logger.info("Total Hits: " + topDocs.totalHits.value);
         for (ScoreDoc sd : topDocs.scoreDocs) {
             Document doc = searcher.doc(sd.doc);
-            System.out.println("_________________________");
-            System.out.println("Document: " + doc.get("filename"));
-            System.out.println("Score: " + sd.score);
+            if (doc == null) {
+                logger.warning("Document not found for scoreDoc: " + sd.doc);
+                continue;
+            }
+            WatchResult wresult = new WatchResult.Builder()
+                    .fileName(doc.get("filename"))
+                    .filePath(doc.get("path"))
+                    .content(docPreview(doc.get("content")))
+                    .score(sd.score)
+                    .build();
+            wresults.add(wresult);
         }
+        return wresults;
     }
 
     public ScoreDoc[] getSearch(String queryString, int maxResults) throws Exception {

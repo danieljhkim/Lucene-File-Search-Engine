@@ -22,7 +22,6 @@ import java.io.File;
 public class SearchView extends BaseView {
 
     private static final String VIEW_NAME = "SearchView";
-    private final ByteBuffersDirectory index = new ByteBuffersDirectory();
     private final DirectoryChooser directoryChooser = new DirectoryChooser();
     private final ListView<String> resultsView = new ListView<>();
     private final Button searchBtn = new Button("Search");
@@ -30,21 +29,21 @@ public class SearchView extends BaseView {
     private final Button clearBtn = new Button("Clear");
     private final ComboBox<String> fileTypeComboBox = new ComboBox<>();
     private final Stage primaryStage;
+    public String selectedDirectory;
     private Indexer indexer;
     private Searcher searcher;
+    private final ByteBuffersDirectory index;
 
-    public SearchView(Stage primaryStage, LogView logView) {
+    public SearchView(Stage primaryStage, LogView logView, ByteBuffersDirectory index) {
         super(logView);
         this.primaryStage = primaryStage;
+        this.index = index;
     }
 
     public void init() {
 
         TextField queryField = new TextField();
         directoryChooser.setTitle("Select Directory to Index");
-
-        initializeIndexer();
-        initializeSearcher();
 
         fileTypeComboBox.setItems(FXCollections.observableArrayList(Constants.SUPPORTED_FILE_TYPES));
         fileTypeComboBox.getSelectionModel().selectFirst();
@@ -70,14 +69,14 @@ public class SearchView extends BaseView {
     /**
      * Initializes the Searcher.
      *
-     * @return true if successfully initialized, false if not.
+     * @return Searcher if successfully initialized, null if not.
      */
-    private boolean initializeSearcher() {
+    public Searcher initializeSearcher() {
         try {
             logView.appendLog(logAppender.debug("Initializing Searcher..."));
             searcher = new Searcher(index);
             searchBtn.setDisable(false);
-            return true;
+            return searcher;
         } catch (IndexNotFoundException e) {
             String errorMessage = "Index not found. Please index a directory first.";
             logView.appendLog(logAppender.error(errorMessage));
@@ -87,20 +86,20 @@ public class SearchView extends BaseView {
             logView.appendLog(logAppender.error(errorMessage));
         }
         searchBtn.setDisable(true);
-        return false;
+        return null;
     }
 
-    private boolean initializeIndexer() {
+    public Indexer initializeIndexer() {
         try {
             logView.appendLog(logAppender.debug("Initializing Indexer..."));
             indexer = new Indexer(index);
-            return true;
+            return indexer;
         } catch (Exception e) {
             String errorMessage = "Failed to initialize Indexer: " + e.getMessage();
             showAlert(Alert.AlertType.ERROR, errorMessage);
             logView.appendLog(logAppender.error(errorMessage));
         }
-        return false;
+        return null;
     }
 
     /**
@@ -138,6 +137,7 @@ public class SearchView extends BaseView {
             logView.appendLog(logAppender.warning("No directory selected."));
             return;
         }
+        this.selectedDirectory = selectedDirectory.getAbsolutePath();
         String fileType = fileTypeComboBox.getSelectionModel().getSelectedItem();
         try {
             indexer.indexDirectory(selectedDirectory.getAbsolutePath(), fileType);

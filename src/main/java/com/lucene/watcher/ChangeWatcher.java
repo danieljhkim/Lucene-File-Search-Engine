@@ -3,16 +3,17 @@ package com.lucene.watcher;
 import com.lucene.indexer.Indexer;
 import com.lucene.model.WatchResult;
 import com.lucene.searcher.Searcher;
+import com.lucene.util.Constants;
+import com.lucene.util.logging.CustomLogger;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.List;
 import java.util.function.Consumer;
 
-public class FileWatcher extends Watcher<List<WatchResult>> {
+public class ChangeWatcher extends Watcher<WatchResult> implements Runnable {
 
-    public FileWatcher(Indexer indexer, Searcher searcher, String dirPath, String searchWord, Consumer<List<WatchResult>> outputFunc) throws IOException {
-        super(indexer, searcher, dirPath, outputFunc, searchWord);
+    public ChangeWatcher(Indexer indexer, Searcher searcher, String dirPath, Consumer<WatchResult> outputFunc) throws IOException {
+        super(indexer, searcher, dirPath, outputFunc);
     }
 
     @Override
@@ -26,14 +27,24 @@ public class FileWatcher extends Watcher<List<WatchResult>> {
                     WatchEvent.Kind<?> kind = event.kind();
                     Path changed = dir.resolve((Path) event.context());
                     logger.info("Event detected: " + kind.name() + " - " + changed);
-                    String fileName = changed.getFileName().toString().toLowerCase();
-                    int idx = fileName.lastIndexOf(".");
-                    String fileExt = (idx > 0) ? fileName.substring(idx + 1) : "INVALID";
+
                     if ((kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY)) {
-                        indexer.indexFile(changed);
+                        String fileName = changed.getFileName().toString().toLowerCase();
+                        int idx = fileName.lastIndexOf(".");
+                        String fileExt = (idx > 0) ? fileName.substring(idx + 1) : "INVALID";
+                        if (!Constants.FILE_TYPES_SET.contains(fileExt)) {
+                            logger.warning("Unsupported file type: " + fileExt);
+                            continue;
+                        }
+                        // indexer.indexFile(changed);
                         try {
-                            List<WatchResult> res = searcher.search(searchWord, 100);
-                            outputFunc.accept(res);
+                            WatchResult wresult = new WatchResult.Builder()
+                                    .fileName(fileName)
+                                    .filePath(changed.toAbsolutePath().toString())
+                                    .eventType(kind.name())
+                                    .build();
+                            logger.info("File indexed: " + wresult);
+                            outputFunc.accept(wresult);
                         } catch (Exception e) {
                             logger.severe("Error during search: " + e.getMessage());
                         }

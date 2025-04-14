@@ -1,6 +1,5 @@
 package com.lucene.indexer;
 
-import com.lucene.util.CollectionsUtil;
 import com.lucene.util.Constants;
 import com.lucene.util.logging.CustomLogger;
 import org.apache.lucene.analysis.Analyzer;
@@ -18,12 +17,10 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Set;
 import java.util.logging.Logger;
 
 public class Indexer {
 
-    public static final Set<String> FILE_TYPES = CollectionsUtil.arrayToSet(Constants.SUPPORTED_FILE_TYPES);
     private static final Logger logger = CustomLogger.getLogger(Indexer.class.getName());
     private final ByteBuffersDirectory index;
     private final Analyzer analyzer;
@@ -54,7 +51,7 @@ public class Indexer {
                     String fileName = file.getFileName().toString().toLowerCase();
                     int idx = fileName.lastIndexOf(".");
                     String fileExt = (idx > 0) ? fileName.substring(idx + 1) : "INVALID";
-                    if (FILE_TYPES.contains(fileExt)) {
+                    if (Constants.FILE_TYPES_SET.contains(fileExt)) {
                         logger.info("File extension: " + file);
                         if (fileType.equals("all")) {
                             indexFile(file);
