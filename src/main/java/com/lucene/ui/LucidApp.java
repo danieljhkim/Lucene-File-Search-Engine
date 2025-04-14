@@ -42,7 +42,7 @@ public class LucidApp extends Application {
         logsTab.setClosable(false);
         Tab watchTab = new Tab("Watch", watchView);
         watchTab.setClosable(false);
-        tabPane.getTabs().addAll(searchTab, logsTab, watchTab);
+        tabPane.getTabs().addAll(searchTab, watchTab, logsTab);
 
         primaryStage.setScene(new Scene(tabPane, 600, 400));
         primaryStage.show();
