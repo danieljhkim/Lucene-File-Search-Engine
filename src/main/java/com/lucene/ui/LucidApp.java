@@ -17,10 +17,10 @@ public class LucidApp extends Application {
 
     private static final String APP_NAME = "LucidSearch";
     private final LogView logView = new LogView();
+    private final ByteBuffersDirectory index = new ByteBuffersDirectory();
     public LogAppender logAppender = new LogAppender(APP_NAME);
     private SearchView searchView;
     private WatchView watchView;
-    private final ByteBuffersDirectory index = new ByteBuffersDirectory();
     private Indexer indexer;
     private Searcher searcher;
 
