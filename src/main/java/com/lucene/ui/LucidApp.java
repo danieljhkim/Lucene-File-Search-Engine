@@ -10,6 +10,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.lucene.store.ByteBuffersDirectory;
 
@@ -27,6 +28,7 @@ public class LucidApp extends Application {
     @Override
     public void start(Stage primaryStage) {
 
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/assets/icon.png")));
         primaryStage.setTitle(APP_NAME);
         searchView = new SearchView(primaryStage, logView, index);
         this.indexer = searchView.initializeIndexer();
