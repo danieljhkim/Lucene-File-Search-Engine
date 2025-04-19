@@ -44,7 +44,6 @@ public class SearchView extends BaseView {
 
         TextField queryField = new TextField();
         directoryChooser.setTitle("Select Directory to Index");
-
         fileTypeComboBox.setItems(FXCollections.observableArrayList(Constants.SUPPORTED_FILE_TYPES));
         fileTypeComboBox.getSelectionModel().selectFirst();
         searchBtn.setOnAction(event -> search(queryField, resultsView));

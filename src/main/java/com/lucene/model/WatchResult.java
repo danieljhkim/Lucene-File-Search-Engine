@@ -10,13 +10,6 @@ public class WatchResult {
     private String content;
     private String eventType;
 
-    public WatchResult() {
-        this.fileName = "";
-        this.filePath = "";
-        this.score = 0.0f;
-        this.content = "";
-        this.eventType = "";
-    }
 
     public WatchResult(String fileName, String filePath, float score, String content, String eventType) {
         this.fileName = fileName;
@@ -26,49 +19,9 @@ public class WatchResult {
         this.eventType = eventType;
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public float getScore() {
-        return score;
-    }
-
-    public void setScore(float score) {
-        this.score = score;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getEventType() {
-        return eventType;
-    }
-
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
-    }
-
-    public String toString2() {
-        return "* Score: " + MathUtil.foundUpToThousandth(score) + "       [" + fileName + "]       " + filePath + "\n" +
-                "   " + content;
+    @Override
+    public String toString() {
+        return "[" + eventType + "]    " + fileName + "    ||   " + filePath + "\n";
     }
 
     public String printChangeEvent() {
@@ -76,6 +29,7 @@ public class WatchResult {
     }
 
     public static class Builder {
+
         private String fileName = "";
         private String filePath = "";
         private float score = 0.0f;

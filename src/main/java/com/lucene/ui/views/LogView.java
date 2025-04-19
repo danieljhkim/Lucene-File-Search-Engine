@@ -16,6 +16,7 @@ public class LogView extends BaseView {
     private TextArea logTextArea;
 
     public LogView() {
+        this.setStyle("-fx-padding: 10; -fx-spacing: 10;");
         BorderPane pane = createLogView();
         this.getChildren().add(pane);
     }
@@ -30,8 +31,6 @@ public class LogView extends BaseView {
         BorderPane pane = new BorderPane();
         pane.setCenter(logTextArea);
         pane.setBottom(refreshBtn);
-        pane.setPadding(new Insets(20));
-
         return pane;
     }
 

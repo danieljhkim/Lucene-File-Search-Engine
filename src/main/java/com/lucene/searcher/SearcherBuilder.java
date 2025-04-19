@@ -6,8 +6,20 @@ import org.apache.lucene.store.ByteBuffersDirectory;
 import java.io.IOException;
 
 public class SearcherBuilder {
+
+    private static SearcherBuilder instance;
+
     private ByteBuffersDirectory index;
     private StandardAnalyzer analyzer;
+
+    private SearcherBuilder() {}
+
+    public static synchronized SearcherBuilder getInstance() {
+        if (instance == null) {
+            instance = new SearcherBuilder();
+        }
+        return instance;
+    }
 
     public SearcherBuilder setIndex(ByteBuffersDirectory index) {
         this.index = index;
@@ -20,7 +32,9 @@ public class SearcherBuilder {
     }
 
     public Searcher build() throws IOException {
+        if (index == null || analyzer == null) {
+            throw new IllegalStateException("Index and Analyzer must be set before building the Searcher.");
+        }
         return new Searcher(index, analyzer);
     }
 }
-    

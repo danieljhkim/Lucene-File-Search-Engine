@@ -4,6 +4,7 @@ import com.lucene.indexer.Indexer;
 import com.lucene.model.WatchResult;
 import com.lucene.searcher.Searcher;
 import com.lucene.util.Constants;
+import javafx.application.Platform;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -151,7 +152,7 @@ public class ChangeWatcher extends Watcher<WatchResult> implements Runnable {
                     .build();
 
             logger.info("File change detected: " + result.printChangeEvent());
-            outputFunc.accept(result);
+            Platform.runLater(() -> outputFunc.accept(result));
         } catch (Exception e) {
             logger.severe("Error creating change notification: " + e.getMessage());
         }

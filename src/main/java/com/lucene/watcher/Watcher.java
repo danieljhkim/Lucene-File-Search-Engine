@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public abstract class Watcher<T> implements Runnable {
+
     static final Logger logger = CustomLogger.getLogger(Watcher.class.getName());
 
     Path dir;
