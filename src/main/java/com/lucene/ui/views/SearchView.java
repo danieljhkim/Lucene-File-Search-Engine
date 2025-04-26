@@ -33,8 +33,9 @@ public class SearchView extends BaseView {
     private final DirectoryChooser directoryChooser = new DirectoryChooser();
     private final ListView<String> resultsView = new ListView<>();
     private final Button searchBtn = new Button("Search");
-    private final Button indexBtn = new Button("Choose Directory & Index");
+    private final Button indexBtn = new Button("Choose Directory to Index");
     private final Button clearBtn = new Button("Clear");
+    private final Button resetPrefsBtn = new Button("Clear Indexes");
     private final ComboBox<String> fileTypeComboBox = new ComboBox<>();
     private final ComboBox<String> indexedDirectoriesComboBox = new ComboBox<>();
     private final Stage primaryStage;
@@ -58,26 +59,25 @@ public class SearchView extends BaseView {
         fileTypeComboBox.setItems(FXCollections.observableArrayList(Constants.SUPPORTED_FILE_TYPES));
         fileTypeComboBox.getSelectionModel().selectFirst();
 
-        Label directoryLabel = new Label("Select Indexed Directory:");
-        indexedDirectoriesComboBox.setPromptText("Choose a directory...");
+        indexedDirectoriesComboBox.setPromptText("Indexed Directories");
         loadIndexedDirectories();
-
         indexedDirectoriesComboBox.setOnAction(event -> switchToSelectedDirectory());
         searchBtn.setOnAction(event -> search(queryField, resultsView));
         indexBtn.setOnAction(event -> selectDirectoryAndIndex());
         clearBtn.setOnAction(event -> clearResults());
-        HBox buttonBox = new HBox(10, fileTypeComboBox, indexBtn);
+        resetPrefsBtn.setOnAction(event -> resetPreferences());
+
+        HBox searchBox = new HBox(10, queryField, searchBtn);
+        HBox indexBox = new HBox(10, indexBtn, indexedDirectoriesComboBox);
+        HBox clearButtonBox = new HBox(10, clearBtn, resetPrefsBtn);
 
         VBox searchVBox = new VBox(10,
                 new Label("Enter search query:"),
-                queryField,
-                searchBtn,
-                new Label("Select file type:"),
-                buttonBox,
-                directoryLabel,
-                indexedDirectoriesComboBox,
+                searchBox,
+                new Label("Index new directory or choose already indexed:"),
+                indexBox,
                 resultsView,
-                clearBtn
+                clearButtonBox
         );
         searchVBox.setPadding(new Insets(20));
         this.getChildren().add(searchVBox);
@@ -255,6 +255,21 @@ public class SearchView extends BaseView {
 
     public void clearResults() {
         resultsView.getItems().clear();
+    }
+
+    /**
+     * Resets all preferences and clears saved directories
+     */
+    private void resetPreferences() {
+        try {
+            prefs.remove(PREF_INDEXED_DIRS);
+            indexedDirectoriesComboBox.getItems().clear();
+            logView.appendLog(logAppender.info("All preferences have been reset"));
+            initializeInMemoryComponents();
+        } catch (Exception e) {
+            logView.appendLog(logAppender.error("Failed to reset preferences: " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Failed to reset preferences");
+        }
     }
 
     public void close() {
