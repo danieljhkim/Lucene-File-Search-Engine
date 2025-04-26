@@ -1,42 +1,34 @@
 package com.lucene.watcher;
 
-import com.lucene.indexer.Indexer;
-import com.lucene.model.WatchResult;
-import com.lucene.searcher.Searcher;
 import com.lucene.util.logging.CustomLogger;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+/**
+ * Abstract base class for all watcher implementations.
+ *
+ * @param <T> The type of results this watcher produces
+ */
 public abstract class Watcher<T> implements Runnable {
 
-    static final Logger logger = CustomLogger.getLogger(Watcher.class.getName());
+    protected static final Logger logger = CustomLogger.getLogger(Watcher.class.getName());
+    protected final Path dir;
+    protected final Consumer<T> outputFunc;
+    protected volatile boolean running = true;
 
-    Path dir;
-    Indexer indexer;
-    Searcher searcher;
-    Consumer<T> outputFunc;
-    String searchWord;
-
-    public Watcher(Indexer indexer, Searcher searcher, String dirPath, Consumer<WatchResult> outputFunc) throws IOException {
+    protected Watcher(String dirPath, Consumer<T> outputFunc) {
         this.dir = Paths.get(dirPath);
-        this.indexer = indexer;
-        this.searcher = searcher;
-        this.outputFunc = (Consumer<T>) outputFunc;
+        this.outputFunc = outputFunc;
     }
 
-    public Watcher(Indexer indexer, Searcher searcher, String dirPath, Consumer<List<WatchResult>> outputFunc, String searchWord) throws IOException {
-        this.dir = Paths.get(dirPath);
-        this.indexer = indexer;
-        this.searcher = searcher;
-        this.searchWord = searchWord;
-        this.outputFunc = (Consumer<T>) outputFunc;
+    public void stop() {
+        running = false;
     }
 
-    abstract public void run();
-
+    public boolean isRunning() {
+        return running;
+    }
 }

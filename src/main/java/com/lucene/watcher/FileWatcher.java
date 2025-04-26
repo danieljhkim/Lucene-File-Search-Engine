@@ -3,6 +3,7 @@ package com.lucene.watcher;
 import com.lucene.indexer.Indexer;
 import com.lucene.model.WatchResult;
 import com.lucene.searcher.Searcher;
+import org.apache.lucene.store.ByteBuffersDirectory;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -10,9 +11,16 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class FileWatcher extends Watcher<List<WatchResult>> {
+    Searcher searcher;
+    Indexer indexer;
+    String searchWord;
+    ByteBuffersDirectory index = new ByteBuffersDirectory();
 
-    public FileWatcher(Indexer indexer, Searcher searcher, String dirPath, String searchWord, Consumer<List<WatchResult>> outputFunc) throws IOException {
-        super(indexer, searcher, dirPath, outputFunc, searchWord);
+    public FileWatcher(String dirPath, String searchWord, Consumer<List<WatchResult>> outputFunc) throws IOException {
+        super(dirPath, outputFunc);
+        this.indexer = new Indexer(index);
+        this.searcher = new Searcher(dirPath);
+        this.searchWord = searchWord;
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.lucene.ui;
 
-import com.lucene.indexer.Indexer;
-import com.lucene.searcher.Searcher;
 import com.lucene.ui.views.LogView;
 import com.lucene.ui.views.SearchView;
 import com.lucene.ui.views.WatchView;
@@ -10,7 +8,6 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.apache.lucene.store.ByteBuffersDirectory;
 
@@ -21,20 +18,14 @@ public class LucidApp extends Application {
     private final ByteBuffersDirectory index = new ByteBuffersDirectory();
     public LogAppender logAppender = new LogAppender(APP_NAME);
     private SearchView searchView;
-    private WatchView watchView;
-    private Indexer indexer;
-    private Searcher searcher;
 
     @Override
     public void start(Stage primaryStage) {
 
-        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/assets/icon.png")));
         primaryStage.setTitle(APP_NAME);
         searchView = new SearchView(primaryStage, logView, index);
-        this.indexer = searchView.initializeIndexer();
-        this.searcher = searchView.initializeSearcher();
         searchView.init();
-        watchView = new WatchView(primaryStage, logView, indexer, searcher);
+        WatchView watchView = new WatchView(primaryStage, logView);
 
         // --- TabPane setup ---
         TabPane tabPane = new TabPane();
@@ -49,7 +40,6 @@ public class LucidApp extends Application {
         primaryStage.setScene(new Scene(tabPane, 600, 400));
         primaryStage.show();
     }
-
 
     /**
      * Clean up resources on application exit.

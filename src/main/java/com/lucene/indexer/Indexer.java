@@ -1,6 +1,7 @@
 package com.lucene.indexer;
 
 import com.lucene.util.Constants;
+import com.lucene.util.FileUtil;
 import com.lucene.util.logging.CustomLogger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -11,6 +12,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.ByteBuffersDirectory;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -22,22 +25,43 @@ import java.util.logging.Logger;
 public class Indexer {
 
     private static final Logger logger = CustomLogger.getLogger(Indexer.class.getName());
-    private final ByteBuffersDirectory index;
+    private final Directory directory;
     private final Analyzer analyzer;
     private final IndexWriter writer;
+    private final String sourceDirectoryPath;
 
     public Indexer(ByteBuffersDirectory index) throws IOException {
-        this.index = index;
+        this.directory = index;
         this.analyzer = new StandardAnalyzer();
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        this.writer = new IndexWriter(this.index, config);
+        this.writer = new IndexWriter(this.directory, config);
+        this.sourceDirectoryPath = null;
     }
 
     public Indexer(ByteBuffersDirectory index, Analyzer analyzer) throws IOException {
-        this.index = index;
+        this.directory = index;
         this.analyzer = analyzer;
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        this.writer = new IndexWriter(index, config);
+        this.writer = new IndexWriter(directory, config);
+        this.sourceDirectoryPath = null;
+    }
+    
+    /**
+     * Create an indexer for a given source directory.
+     * The index will be stored in "LucidSearch/data/[encoded-directory-name]"
+     */
+    public Indexer(String sourceDirectoryPath) throws IOException {
+        this.sourceDirectoryPath = sourceDirectoryPath;
+        this.analyzer = new StandardAnalyzer();
+        Path indexPath = FileUtil.getIndexPath(sourceDirectoryPath);
+        Files.createDirectories(indexPath);
+        
+        logger.info("Creating index at: " + indexPath);
+        this.directory = FSDirectory.open(indexPath);
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+        // Use CREATE_OR_APPEND to preserve any existing index
+        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        this.writer = new IndexWriter(directory, config);
     }
 
     public void indexDirectory(String directoryPath, String fileType) throws IOException {
@@ -77,7 +101,6 @@ public class Indexer {
         doc.add(new TextField("filename", filePath.getFileName().toString(), Field.Store.YES));
         doc.add(new TextField("content", content, Field.Store.YES));
         doc.add(new TextField("path", filePath.toAbsolutePath().toString(), Field.Store.YES));
-        // Use updateDocument to replace older versions with same filename
         writer.updateDocument(new Term("filename", filePath.getFileName().toString()), doc);
         writer.commit();
         logger.info("Indexed: " + filePath.getFileName());
@@ -85,5 +108,7 @@ public class Indexer {
 
     public void close() throws IOException {
         writer.close();
+        directory.close();
     }
+
 }

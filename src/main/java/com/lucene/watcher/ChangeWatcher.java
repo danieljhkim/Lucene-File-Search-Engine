@@ -1,8 +1,6 @@
 package com.lucene.watcher;
 
-import com.lucene.indexer.Indexer;
 import com.lucene.model.WatchResult;
-import com.lucene.searcher.Searcher;
 import com.lucene.util.Constants;
 import javafx.application.Platform;
 
@@ -12,14 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ChangeWatcher extends Watcher<WatchResult> implements Runnable {
+public class ChangeWatcher extends Watcher<WatchResult> {
 
     private final Map<WatchKey, Path> watchKeyToPathMap = new HashMap<>();
     private final WatchService watchService;
-    private volatile boolean running = true;
 
-    public ChangeWatcher(Indexer indexer, Searcher searcher, String dirPath, Consumer<WatchResult> outputFunc) throws IOException {
-        super(indexer, searcher, dirPath, outputFunc);
+    public ChangeWatcher(String dirPath, Consumer<WatchResult> outputFunc) throws IOException {
+        super(dirPath, outputFunc);
         this.watchService = FileSystems.getDefault().newWatchService();
         registerDirectory(dir);
     }
@@ -84,6 +81,7 @@ public class ChangeWatcher extends Watcher<WatchResult> implements Runnable {
             } catch (IOException e) {
                 logger.warning("Failed to close watch service: " + e.getMessage());
             }
+            running = false;
         }
     }
 
@@ -109,8 +107,14 @@ public class ChangeWatcher extends Watcher<WatchResult> implements Runnable {
                 });
     }
 
+    @Override
     public void stop() {
-        running = false;
+        super.stop();
+        try {
+            watchService.close();
+        } catch (IOException e) {
+            logger.warning("Failed to close watch service: " + e.getMessage());
+        }
     }
 
     private void processEvent(WatchEvent.Kind<?> kind, Path changedPath) {
