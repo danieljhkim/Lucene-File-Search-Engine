@@ -6,12 +6,13 @@ Personal file search engine powered by Lucene.
 
 ## Overview
 
-Lucid Search Engine is a lightweight, Java-based application that helps you index and search your personal files with lightning-fast relevance ranking, powered by Apache Lucene. 
+Lucid Search Engine is a lightweight, Java-based application that helps you index and search your personal files with
+lightning-fast relevance ranking, powered by Apache Lucene.
 
 It also includes a real-time file change watcher so that you can monitor any system modifications in real-time.
 
-
 ## Features
+
 - File indexing and search capabilities
 - File change watcher for real-time monitoring on system file changes (good for virus detection)
 - Relevancy-based search results
@@ -20,13 +21,22 @@ It also includes a real-time file change watcher so that you can monitor any sys
 - Log viewer for monitoring software activity
 
 ## GUI Preview
-![Lucid Search Engine GUI](assets/gui.png)
+
+### Index Directories & Search
+
+![Lucid Search Engine GUI](assets/gui1.png)
+
+### Monitor File Changes
+
+![Lucid Search Engine GUI](assets/gui2.png)
 
 ## Requirements
+
 - Java JDK 17 or higher
 - Maven
 
 ## Build & Run
+
 Use the following command to build and run the application:
 
 ```bash
@@ -34,4 +44,5 @@ Use the following command to build and run the application:
 ```
 
 ## License
+
 Distributed under the MIT License.
